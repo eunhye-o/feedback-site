@@ -1,0 +1,4 @@
+-- remove test records written while checking the site (student 1-5, answers starting with [시험])
+delete from submissions where answer like '[시험]%';
+update students set pin = null where class_no = 1 and student_no = 5;
+select count(*) as test_rows_left from submissions where answer like '[시험]%';
