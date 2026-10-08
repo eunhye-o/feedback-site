@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>오늘 내가 이해한 것</title>
+<style>
+  :root {
+    --bg: #f7f6f2;
+    --card: #ffffff;
+    --text: #222;
+    --muted: #666;
+    --line: #ddd;
+    --accent: #2f6f4f;
+    --ok-bg: #e3f2e8;
+    --ok-text: #1f5a3a;
+    --no-bg: #f6ecd9;
+    --no-text: #7a5410;
+    --error: #b3261e;
+    --accent-soft: #e4efe8;
+    --bulb: #fff6d6;
+    --spark: #e9a23b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    line-height: 1.6;
+    word-break: keep-all;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+  header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px; }
+  h1 { font-size: 20px; margin: 0; }
+  .top-left { display: flex; align-items: center; gap: 14px; }
+  .back-btn { color: var(--accent); border-color: var(--accent-soft); background: var(--accent-soft); white-space: nowrap; }
+  .back-btn:hover { border-color: var(--accent); }
+  h2 { font-size: 17px; margin: 0 0 8px; }
+  .sub { color: var(--muted); font-size: 14px; margin: 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .label { font-size: 13px; color: var(--muted); margin: 0 0 6px; }
+  .question { font-size: 17px; margin: 0; white-space: pre-wrap; }
+  textarea, input[type="text"] {
+    width: 100%; font: inherit; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff;
+  }
+  textarea { min-height: 110px; resize: vertical; }
+  button {
+    font: inherit; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--line); background: #fff; cursor: pointer;
+  }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .hero { text-align: center; padding: 24px 8px 8px; }
+  .hero-art { width: 112px; height: 112px; display: block; margin: 0 auto 16px; }
+  .pill {
+    display: inline-block; font-size: 13px; padding: 4px 12px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent);
+  }
+  .hero-title { font-size: 30px; margin: 12px 0 8px; letter-spacing: -0.5px; }
+  .hero-text { color: var(--muted); margin: 0 auto; max-width: 420px; }
+  .choose-label { text-align: center; color: var(--muted); font-size: 14px; margin: 32px 0 12px; }
+  .role-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .role-card {
+    display: flex; align-items: center; gap: 14px; text-align: left;
+    padding: 20px 18px; border-radius: 16px; border: 1px solid var(--line); background: var(--card);
+    transition: border-color .15s, transform .15s;
+  }
+  .role-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .role-card:focus-visible { outline: 3px solid var(--accent-soft); border-color: var(--accent); }
+  .role-icon {
+    flex: none; width: 48px; height: 48px; border-radius: 12px; background: var(--accent-soft);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .role-icon svg { width: 26px; height: 26px; fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .role-body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .role-title { font-size: 18px; font-weight: 600; }
+  .role-desc { font-size: 14px; color: var(--muted); }
+  .role-arrow { color: var(--accent); font-size: 18px; }
+  @media (max-width: 560px) {
+    .role-cards { grid-template-columns: 1fr; }
+    .hero-title { font-size: 26px; }
+  }
+  .login-card { max-width: 460px; margin: 0 auto 16px; }
+  .login-card .sub { margin-bottom: 16px; }
+  .login-row { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+  .login-field { flex: 1; min-width: 100px; }
+  .unit-input { display: flex; align-items: center; gap: 6px; }
+  .unit-input input {
+    width: 100%; font: inherit; font-size: 18px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
+  }
+  .login-row button { padding: 11px 20px; }
+  .field { margin-bottom: 12px; }
+  .error { color: var(--error); font-size: 14px; margin: 6px 0 0; min-height: 1em; }
+  .written { white-space: pre-wrap; margin: 0 0 12px; }
+  .teacher-grid { display: grid; grid-template-columns: minmax(0, 280px) minmax(0, 1fr); gap: 16px; }
+  .student-list li button > span:first-child { white-space: nowrap; }
+  .student-list { list-style: none; margin: 0; padding: 0; }
+  .student-list li button {
+    width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    border: none; border-bottom: 1px solid var(--line); border-radius: 0; padding: 10px 4px; background: none; text-align: left;
+  }
+  .student-list li button.selected { background: var(--bg); }
+  .tag { font-size: 12px; padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+  .tag.ok { background: var(--ok-bg); color: var(--ok-text); }
+  .tag.no { background: var(--no-bg); color: var(--no-text); }
+  .tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+  .feedback-section { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .written.empty { color: var(--muted); }
+  .list-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .list-head h2 { margin: 0; }
+  .list-head button { font-size: 13px; padding: 5px 12px; }
+  .reply-row { display: flex; gap: 8px; }
+  .reply-row input { flex: 1; min-width: 0; }
+  .reply-row button { white-space: nowrap; }
+  .pin-section {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+    margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted);
+  }
+  .pin-section button { font-size: 13px; padding: 6px 12px; }
+  [hidden] { display: none !important; }
+  @media (max-width: 560px) {
+    .teacher-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header id="top-bar" hidden>
+    <div class="top-left">
+      <button class="back-btn" id="go-back" aria-label="뒤로">← 뒤로</button>
+      <div>
+        <h1>오늘 내가 이해한 것</h1>
+        <p class="sub">가람중학교 2학년 과학 「전기와 자기」</p>
+      </div>
+    </div>
+    <button id="go-home" hidden>처음으로</button>
+  </header>
+
+  <!-- 처음 화면: 학생 / 선생님 고르기 -->
+  <section id="screen-home">
+    <div class="hero">
+      <svg class="hero-art" viewBox="0 0 120 120" aria-hidden="true">
+        <circle cx="60" cy="60" r="56" fill="var(--accent-soft)"/>
+        <path d="M60 26a22 22 0 0 0-13 39.7c2.6 2 4 4.6 4 7.3v3h18v-3c0-2.7 1.4-5.3 4-7.3A22 22 0 0 0 60 26z"
+              fill="var(--bulb)" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M53 82h14M54 89h12M57 96h6" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M54 58l6-8 6 8-6 8z" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M22 44l-6-3M98 44l6-3M60 14v-6M30 24l-4-4M90 24l4-4" stroke="var(--spark)" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <span class="pill">가람중학교 2학년 과학 · 전기와 자기</span>
+      <h1 class="hero-title">오늘 내가 이해한 것</h1>
+      <p class="hero-text">수업이 끝나면 오늘 배운 내용을 내 말로 정리해요.<br>선생님이 읽고 한 사람씩 피드백을 남겨 줘요.</p>
+    </div>
+
+    <p class="choose-label">누구로 들어갈까요?</p>
+    <div class="role-cards">
+      <button class="role-card" id="choose-student">
+        <span class="role-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>
+        </span>
+        <span class="role-body">
+          <span class="role-title">학생</span>
+          <span class="role-desc">오늘 이해한 것을 내 말로 써요</span>
+        </span>
+        <span class="role-arrow" aria-hidden="true">→</span>
+      </button>
+      <button class="role-card" id="choose-teacher">
+        <span class="role-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 5h18v11H3z"/><path d="M8 20l4-4 4 4"/><path d="M7 9h6M7 12h9"/></svg>
+        </span>
+        <span class="role-body">
+          <span class="role-title">선생님</span>
+          <span class="role-desc">질문을 올리고 학생 글을 읽어요</span>
+        </span>
+        <span class="role-arrow" aria-hidden="true">→</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- 학생 반·번호 입력 -->
+  <section id="screen-pick" hidden>
+    <div class="card login-card">
+      <h2>반과 번호를 입력해 주세요</h2>
+      <p class="sub">2학년 학생만 들어올 수 있어요.</p>
+      <form id="login-form" class="login-row" novalidate>
+        <label class="login-field">
+          <span class="label">반</span>
+          <span class="unit-input"><input type="number" id="class-input" min="1" inputmode="numeric"><span>반</span></span>
+        </label>
+        <label class="login-field">
+          <span class="label">번호</span>
+          <span class="unit-input"><input type="number" id="number-input" min="1" inputmode="numeric"><span>번</span></span>
+        </label>
+        <button class="primary" type="submit">다음</button>
+      </form>
+      <p class="error" id="login-error"></p>
+    </div>
+  </section>
+
+  <!-- 학생 비밀번호: 처음이면 정하기, 아니면 입력하기 -->
+  <section id="screen-pin" hidden>
+    <div class="card login-card">
+      <h2 id="pin-title"></h2>
+      <p class="sub" id="pin-help"></p>
+      <form id="pin-form" class="login-row" novalidate>
+        <label class="login-field">
+          <span class="label" id="pin-label">비밀번호 (숫자 4자리)</span>
+          <span class="unit-input"><input type="password" id="pin-input" maxlength="4" inputmode="numeric" autocomplete="off"></span>
+        </label>
+        <label class="login-field" id="pin-confirm-field">
+          <span class="label">한 번 더 입력</span>
+          <span class="unit-input"><input type="password" id="pin-confirm-input" maxlength="4" inputmode="numeric" autocomplete="off"></span>
+        </label>
+        <button class="primary" type="submit" id="pin-submit">들어가기</button>
+      </form>
+      <p class="error" id="pin-error"></p>
+    </div>
+  </section>
+
+  <!-- 선생님 비밀번호 입력 -->
+  <section id="screen-tlogin" hidden>
+    <div class="card login-card">
+      <h2>선생님 비밀번호를 입력해 주세요</h2>
+      <p class="sub">선생님 화면에서는 모든 학생의 글을 볼 수 있어요.</p>
+      <form id="teacher-login-form" class="login-row" novalidate>
+        <label class="login-field">
+          <span class="label">비밀번호</span>
+          <span class="unit-input"><input type="password" id="teacher-pw-input" autocomplete="off"></span>
+        </label>
+        <button class="primary" type="submit">들어가기</button>
+      </form>
+      <p class="error" id="teacher-login-error"></p>
+    </div>
+  </section>
+
+  <!-- 학생 화면: 그 학생 자신의 기록만 -->
+  <section id="screen-student" hidden>
+    <p class="sub" id="student-hello"></p>
+    <div class="card">
+      <p class="label">오늘의 질문</p>
+      <p class="question" id="student-question"></p>
+    </div>
+    <div class="card" id="answer-form-card">
+      <div class="field">
+        <p class="label">내 답 (내 말로 써 보세요)</p>
+        <textarea id="answer-input"></textarea>
+      </div>
+      <div class="field">
+        <p class="label">오늘 어려웠던 점 (한 줄, 비워도 돼요)</p>
+        <input type="text" id="difficulty-input">
+      </div>
+      <button class="primary" id="submit-answer">내기</button>
+      <p class="error" id="answer-error"></p>
+    </div>
+    <div class="card" id="answer-done-card" hidden>
+      <p class="label">내가 낸 답</p>
+      <p class="written" id="my-answer"></p>
+      <p class="label">어려웠던 점</p>
+      <p class="written" id="my-difficulty"></p>
+    </div>
+    <div class="card" id="feedback-card"></div>
+  </section>
+
+  <!-- 선생님 화면 -->
+  <section id="screen-teacher" hidden>
+    <div class="card">
+      <p class="label">지금 올라가 있는 질문</p>
+      <p class="question" id="teacher-question"></p>
+    </div>
+    <div class="card">
+      <p class="label">새 질문 올리기 (올리면 지금까지 낸 답은 모두 지워져요)</p>
+      <div class="field">
+        <textarea id="question-input" style="min-height: 70px;"></textarea>
+      </div>
+      <button class="primary" id="post-question">질문 올리기</button>
+      <p class="error" id="question-error"></p>
+    </div>
+    <div class="teacher-grid">
+      <div class="card">
+        <div class="list-head">
+          <h2>학생 목록</h2>
+          <button id="collect-toggle" aria-pressed="false">모아 보기</button>
+        </div>
+        <p class="sub" id="collect-help" hidden>안 읽은 학생과 답글이 온 학생만 보여요.</p>
+        <ul class="student-list" id="student-list"></ul>
+      </div>
+      <div class="card" id="student-detail">
+        <p class="sub">왼쪽에서 학생 이름을 누르면 글이 보여요.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  const STORAGE_KEY = "feedback-site";
+  // 학생 명단 (2학년 1반, 실습용 가명)
+  const ROSTER = [
+    { cls: 1, no: 1, name: "하늘" },
+    { cls: 1, no: 2, name: "바다" },
+    { cls: 1, no: 3, name: "숲" },
+    { cls: 1, no: 4, name: "별" },
+    { cls: 1, no: 5, name: "구름" },
+  ];
+  // 비밀번호는 실습용이다. 이 파일을 열면 누구나 볼 수 있고, 학생 비밀번호도
+  // 브라우저에 그대로 저장되므로 진짜 보안이 아니다.
+  const TEACHER_PASSWORD = "garam-science";
+  const STUDENTS = ROSTER.map(s => s.name);
+  function displayName(name) {
+    const s = ROSTER.find(s => s.name === name);
+    return s.cls + "반 " + s.no + "번 " + s.name;
+  }
+  const DEFAULT_QUESTION =
+    "오늘 수업에서 배운 전류와 전압은 어떻게 다른가요? 친구에게 설명하듯 내 말로 2~3문장 써 보세요.";
+
+  // ---- 저장 (localStorage) ----
+  function emptyRecords() {
+    const records = {};
+    STUDENTS.forEach(name => { records[name] = { answer: "", difficulty: "", submitted: false, feedback: "", read: false, reply: "" }; });
+    return records;
+  }
+
+  function loadData() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (saved && saved.question && saved.records) {
+        saved.pins = saved.pins || {};
+        return saved;
+      }
+    } catch (e) { /* 저장된 값이 없거나 깨졌으면 처음 상태로 */ }
+    return { question: DEFAULT_QUESTION, records: emptyRecords(), pins: {} };
+  }
+
+  function saveData() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) { /* 저장이 막힌 브라우저에서도 화면은 계속 동작하게 */ }
+  }
+
+  let data = loadData();
+  let currentStudent = null;
+  let selectedInTeacher = null;
+  let collectOn = false; // "모아 보기"가 켜져 있는지
+
+  // ---- 화면 바꾸기 ----
+  const screens = ["home", "pick", "pin", "student", "tlogin", "teacher"];
+  // "뒤로"를 누르면 갈 화면
+  const backTo = { pick: "home", pin: "pick", student: "pick", tlogin: "home", teacher: "home" };
+  let currentScreen = "home";
+
+  function show(screen) {
+    currentScreen = screen;
+    screens.forEach(s => { document.getElementById("screen-" + s).hidden = s !== screen; });
+    // 처음 화면은 큰 제목이 따로 있어서 위쪽 막대를 숨긴다.
+    document.getElementById("top-bar").hidden = screen === "home";
+    // "뒤로"가 이미 처음 화면으로 가는 곳에서는 "처음으로"를 숨긴다.
+    document.getElementById("go-home").hidden = screen === "home" || backTo[screen] === "home";
+  }
+
+  function goHome() {
+    currentStudent = null;
+    selectedInTeacher = null;
+    collectOn = false;
+    show("home");
+  }
+
+  document.getElementById("go-home").addEventListener("click", goHome);
+  document.getElementById("go-back").addEventListener("click", () => {
+    const target = backTo[currentScreen];
+    if (target === "home") goHome();
+    else {
+      currentStudent = null;
+      pendingStudent = null;
+      resetLogin();
+      show(target);
+    }
+  });
+  document.getElementById("choose-student").addEventListener("click", () => {
+    resetLogin();
+    show("pick");
+  });
+  document.getElementById("choose-teacher").addEventListener("click", () => {
+    resetTeacherLogin();
+    show("tlogin");
+  });
+
+  // ---- 선생님 비밀번호 입력 ----
+  function resetTeacherLogin() {
+    document.getElementById("teacher-pw-input").value = "";
+    document.getElementById("teacher-login-error").textContent = "";
+  }
+
+  document.getElementById("teacher-login-form").addEventListener("submit", event => {
+    event.preventDefault();
+    const input = document.getElementById("teacher-pw-input");
+    const error = document.getElementById("teacher-login-error");
+    if (!input.value) {
+      error.textContent = "비밀번호를 입력해 주세요.";
+      return;
+    }
+    if (input.value !== TEACHER_PASSWORD) {
+      error.textContent = "비밀번호가 맞지 않아요.";
+      input.value = "";
+      return;
+    }
+    resetTeacherLogin();
+    renderTeacher();
+    show("teacher");
+  });
+
+  document.getElementById("teacher-pw-input").addEventListener("input", () => {
+    document.getElementById("teacher-login-error").textContent = "";
+  });
+
+  // ---- 학생 반·번호 입력 ----
+  let pendingStudent = null; // 반·번호는 맞았고 비밀번호를 기다리는 학생
+
+  function resetLogin() {
+    document.getElementById("class-input").value = "";
+    document.getElementById("number-input").value = "";
+    document.getElementById("login-error").textContent = "";
+  }
+
+  document.getElementById("login-form").addEventListener("submit", event => {
+    event.preventDefault();
+    const cls = Number(document.getElementById("class-input").value);
+    const no = Number(document.getElementById("number-input").value);
+    const error = document.getElementById("login-error");
+    if (!cls || !no) {
+      error.textContent = "반과 번호를 모두 입력해 주세요.";
+      return;
+    }
+    const student = ROSTER.find(s => s.cls === cls && s.no === no);
+    if (!student) {
+      error.textContent = cls + "반 " + no + "번은 명단에 없어요. 다시 확인해 주세요.";
+      return;
+    }
+    pendingStudent = student.name;
+    renderPin();
+    show("pin");
+  });
+
+  ["class-input", "number-input"].forEach(id => {
+    document.getElementById(id).addEventListener("input", () => {
+      document.getElementById("login-error").textContent = "";
+    });
+  });
+
+  // ---- 학생 비밀번호: 처음이면 정하기, 아니면 입력하기 ----
+  function isFirstVisit(name) {
+    return !data.pins[name];
+  }
+
+  function renderPin() {
+    const first = isFirstVisit(pendingStudent);
+    document.getElementById("pin-title").textContent = displayName(pendingStudent);
+    document.getElementById("pin-help").textContent = first
+      ? "처음 들어왔어요. 앞으로 쓸 비밀번호 숫자 4자리를 정해 주세요. 친구에게 알려 주지 마세요."
+      : "내 비밀번호 4자리를 입력해 주세요.";
+    document.getElementById("pin-label").textContent = first ? "새 비밀번호" : "비밀번호";
+    document.getElementById("pin-confirm-field").hidden = !first;
+    document.getElementById("pin-submit").textContent = first ? "정하고 들어가기" : "들어가기";
+    document.getElementById("pin-input").value = "";
+    document.getElementById("pin-confirm-input").value = "";
+    document.getElementById("pin-error").textContent = "";
+  }
+
+  document.getElementById("pin-form").addEventListener("submit", event => {
+    event.preventDefault();
+    const pinInput = document.getElementById("pin-input");
+    const confirmInput = document.getElementById("pin-confirm-input");
+    const error = document.getElementById("pin-error");
+    const pin = pinInput.value;
+
+    if (isFirstVisit(pendingStudent)) {
+      if (!/^[0-9]{4}$/.test(pin)) {
+        error.textContent = "비밀번호는 숫자 4자리로 정해 주세요.";
+        return;
+      }
+      if (pin !== confirmInput.value) {
+        error.textContent = "두 비밀번호가 달라요. 다시 입력해 주세요.";
+        confirmInput.value = "";
+        return;
+      }
+      data.pins[pendingStudent] = pin;
+      saveData();
+    } else {
+      if (!pin) {
+        error.textContent = "비밀번호를 입력해 주세요.";
+        return;
+      }
+      if (pin !== data.pins[pendingStudent]) {
+        error.textContent = "비밀번호가 맞지 않아요.";
+        pinInput.value = "";
+        return;
+      }
+    }
+    currentStudent = pendingStudent;
+    pendingStudent = null;
+    resetLogin();
+    renderStudent();
+    show("student");
+  });
+
+  ["pin-input", "pin-confirm-input"].forEach(id => {
+    document.getElementById(id).addEventListener("input", () => {
+      document.getElementById("pin-error").textContent = "";
+    });
+  });
+
+  // ---- 학생 화면 ----
+  function renderStudent() {
+    const record = data.records[currentStudent];
+    document.getElementById("student-hello").textContent = displayName(currentStudent) + " 학생의 화면이에요.";
+    document.getElementById("student-question").textContent = data.question;
+    document.getElementById("answer-error").textContent = "";
+
+    const done = record.submitted;
+    document.getElementById("answer-form-card").hidden = done;
+    document.getElementById("answer-done-card").hidden = !done;
+    if (done) {
+      document.getElementById("my-answer").textContent = record.answer;
+      document.getElementById("my-difficulty").textContent = record.difficulty || "(적지 않았어요)";
+    } else {
+      document.getElementById("answer-input").value = "";
+      document.getElementById("difficulty-input").value = "";
+    }
+
+    renderMyFeedback();
+  }
+
+  // 나에게 온 피드백: 없음 → 접힘("피드백 열기") → 펼침 + 답글
+  function renderMyFeedback() {
+    const record = data.records[currentStudent];
+    const card = document.getElementById("feedback-card");
+    card.innerHTML = "";
+    card.appendChild(makeLabel("나에게 온 피드백"));
+
+    if (!record.feedback) {
+      const p = makeWritten("아직 피드백이 없어요.");
+      p.classList.add("empty");
+      card.appendChild(p);
+      return;
+    }
+
+    if (!record.read) {
+      const p = makeWritten("선생님 피드백이 도착했어요.");
+      const open = document.createElement("button");
+      open.className = "primary";
+      open.textContent = "피드백 열기";
+      open.addEventListener("click", () => {
+        // 피드백을 여는 순간 "읽음"으로 기록한다.
+        record.read = true;
+        saveData();
+        renderMyFeedback();
+      });
+      card.append(p, open);
+      return;
+    }
+
+    card.appendChild(makeWritten(record.feedback));
+
+    const replyBox = document.createElement("div");
+    replyBox.className = "feedback-section";
+    if (record.reply) {
+      replyBox.append(makeLabel("내 답글"), makeWritten(record.reply));
+    } else {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.placeholder = "선생님께 한 줄 답글을 남겨 보세요.";
+      const send = document.createElement("button");
+      send.className = "primary";
+      send.textContent = "답글 보내기";
+      const error = document.createElement("p");
+      error.className = "error";
+      const sendReply = () => {
+        const reply = input.value.trim();
+        if (!reply) {
+          error.textContent = "답글을 먼저 써 주세요.";
+          return;
+        }
+        record.reply = reply;
+        saveData();
+        renderMyFeedback();
+      };
+      send.addEventListener("click", sendReply);
+      input.addEventListener("keydown", e => { if (e.key === "Enter") sendReply(); });
+      input.addEventListener("input", () => { error.textContent = ""; });
+      const row = document.createElement("div");
+      row.className = "reply-row";
+      row.append(input, send);
+      replyBox.append(makeLabel("답글 (한 줄, 보내면 고칠 수 없어요)"), row, error);
+    }
+    card.appendChild(replyBox);
+  }
+
+  document.getElementById("submit-answer").addEventListener("click", () => {
+    const answer = document.getElementById("answer-input").value.trim();
+    const difficulty = document.getElementById("difficulty-input").value.trim();
+    if (!answer) {
+      document.getElementById("answer-error").textContent = "답을 먼저 써 주세요.";
+      return;
+    }
+    Object.assign(data.records[currentStudent], { answer, difficulty, submitted: true });
+    saveData();
+    renderStudent();
+  });
+
+  document.getElementById("answer-input").addEventListener("input", () => {
+    document.getElementById("answer-error").textContent = "";
+  });
+
+  // ---- 선생님 화면 ----
+  function renderTeacher() {
+    document.getElementById("teacher-question").textContent = data.question;
+    document.getElementById("question-error").textContent = "";
+
+    const toggle = document.getElementById("collect-toggle");
+    toggle.textContent = collectOn ? "전체 보기" : "모아 보기";
+    toggle.setAttribute("aria-pressed", String(collectOn));
+    toggle.classList.toggle("primary", collectOn);
+    document.getElementById("collect-help").hidden = !collectOn;
+
+    // 모아 보기: 아직 피드백을 읽지 않은 학생 + 답글이 온 학생
+    const shown = collectOn
+      ? STUDENTS.filter(name => !data.records[name].read || !!data.records[name].reply)
+      : STUDENTS;
+
+    const list = document.getElementById("student-list");
+    list.innerHTML = "";
+    if (shown.length === 0) {
+      const li = document.createElement("li");
+      li.className = "sub";
+      li.textContent = "챙겨야 할 학생이 없어요.";
+      list.appendChild(li);
+    }
+    shown.forEach(name => {
+      const record = data.records[name];
+      const li = document.createElement("li");
+      const btn = document.createElement("button");
+      if (name === selectedInTeacher) btn.classList.add("selected");
+
+      const nameSpan = document.createElement("span");
+      nameSpan.textContent = displayName(name);
+      const tags = document.createElement("span");
+      tags.className = "tags";
+      tags.append(
+        makeTag(record.submitted, "제출", "미제출"),
+        makeTag(!!record.feedback, "피드백 함", "피드백 안 함")
+      );
+      if (record.feedback) tags.append(makeTag(record.read, "읽음", "안 읽음"));
+      if (record.reply) tags.append(makeTag(true, "답글", ""));
+
+      btn.append(nameSpan, tags);
+      btn.addEventListener("click", () => {
+        selectedInTeacher = name;
+        renderTeacher();
+      });
+      li.appendChild(btn);
+      list.appendChild(li);
+    });
+
+    renderDetail();
+  }
+
+  function renderDetail() {
+    const box = document.getElementById("student-detail");
+    box.innerHTML = "";
+    if (!selectedInTeacher) {
+      const p = document.createElement("p");
+      p.className = "sub";
+      p.textContent = "왼쪽에서 학생 이름을 누르면 글이 보여요.";
+      box.appendChild(p);
+      return;
+    }
+    const record = data.records[selectedInTeacher];
+    const title = document.createElement("h2");
+    title.textContent = displayName(selectedInTeacher);
+    box.appendChild(title);
+
+    if (!record.submitted) {
+      const p = document.createElement("p");
+      p.className = "sub";
+      p.textContent = "아직 내지 않았어요.";
+      box.appendChild(p);
+    } else {
+      box.append(
+        makeLabel("답"), makeWritten(record.answer),
+        makeLabel("어려웠던 점"), makeWritten(record.difficulty || "(적지 않았어요)"),
+        makeFeedbackSection(selectedInTeacher)
+      );
+    }
+    box.appendChild(makePinSection(selectedInTeacher));
+  }
+
+  // 피드백: 아직 안 보냈으면 쓰는 칸, 보냈으면 보낸 내용 (한 번만 보내고 고칠 수 없다)
+  function makeFeedbackSection(name) {
+    const record = data.records[name];
+    const section = document.createElement("div");
+    section.className = "feedback-section";
+    if (record.feedback) {
+      section.append(makeLabel("보낸 피드백"), makeWritten(record.feedback));
+      section.append(makeLabel("읽음"), makeWritten(record.read ? "학생이 피드백을 읽었어요." : "아직 읽지 않았어요."));
+      if (record.reply) section.append(makeLabel("학생 답글"), makeWritten(record.reply));
+      return section;
+    }
+    const textarea = document.createElement("textarea");
+    textarea.placeholder = "이 학생에게 보낼 피드백을 써 주세요.";
+    textarea.style.minHeight = "90px";
+    const button = document.createElement("button");
+    button.className = "primary";
+    button.textContent = "피드백 보내기";
+    const error = document.createElement("p");
+    error.className = "error";
+    button.addEventListener("click", () => {
+      const feedback = textarea.value.trim();
+      if (!feedback) {
+        error.textContent = "피드백을 먼저 써 주세요.";
+        return;
+      }
+      record.feedback = feedback;
+      saveData();
+      renderTeacher();
+    });
+    textarea.addEventListener("input", () => { error.textContent = ""; });
+    const field = document.createElement("div");
+    field.className = "field";
+    field.appendChild(textarea);
+    section.append(makeLabel("피드백 쓰기 (보내면 고칠 수 없어요)"), field, button, error);
+    return section;
+  }
+
+  function makeTag(on, onText, offText) {
+    const tag = document.createElement("span");
+    tag.className = "tag " + (on ? "ok" : "no");
+    tag.textContent = on ? onText : offText;
+    return tag;
+  }
+
+  // 학생 비밀번호 상태와 초기화 버튼
+  function makePinSection(name) {
+    const section = document.createElement("div");
+    section.className = "pin-section";
+    const hasPin = !!data.pins[name];
+    const status = document.createElement("span");
+    status.textContent = "비밀번호: " + (hasPin ? "정해 둠" : "아직 안 정함");
+    section.appendChild(status);
+    if (hasPin) {
+      const btn = document.createElement("button");
+      btn.textContent = "비밀번호 초기화";
+      btn.addEventListener("click", () => {
+        const ok = confirm(displayName(name) + " 학생의 비밀번호를 초기화할까요?\n학생은 다음에 들어올 때 비밀번호를 새로 정해요. 낸 답은 지워지지 않아요.");
+        if (!ok) return;
+        delete data.pins[name];
+        saveData();
+        renderDetail();
+      });
+      section.appendChild(btn);
+    }
+    return section;
+  }
+
+  function makeLabel(text) {
+    const p = document.createElement("p");
+    p.className = "label";
+    p.textContent = text;
+    return p;
+  }
+  function makeWritten(text) {
+    const p = document.createElement("p");
+    p.className = "written";
+    p.textContent = text;
+    return p;
+  }
+
+  document.getElementById("collect-toggle").addEventListener("click", () => {
+    collectOn = !collectOn;
+    renderTeacher();
+  });
+
+  document.getElementById("post-question").addEventListener("click", () => {
+    const input = document.getElementById("question-input");
+    const question = input.value.trim();
+    if (!question) {
+      document.getElementById("question-error").textContent = "질문을 먼저 써 주세요.";
+      return;
+    }
+    // 새 질문을 올리면 이전 질문에 달린 기록을 모두 비우고 새로 시작한다.
+    // 학생 비밀번호(pins)는 질문과 상관없으므로 그대로 둔다.
+    data = { question, records: emptyRecords(), pins: data.pins };
+    saveData();
+    input.value = "";
+    selectedInTeacher = null;
+    renderTeacher();
+  });
+
+  show("home");
+</script>
+</body>
+</html>
